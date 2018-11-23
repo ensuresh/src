@@ -1,24 +1,24 @@
 package twitterapi
 
 import (
-	"net/http"
-	"strings"
-	"fmt"
-	"os"
 	"encoding/json"
-	"twittersearch/config"
+	"fmt"
 	"log"
+	"net/http"
+	"os"
+	"strings"
 	"twittersearch/cnckafkaapi"
+	"twittersearch/config"
 )
 
 //Variable to store access token
 var App_Access_Token = config.Twitter_App_Only_AccessToken{}
 
 //function to retrieve token to access twitter
-func Get_Access(b64Token string){
+func Get_Access(b64Token string) {
 
 	//Using http request method to POST API Token Request to Twitter API
-	req, err := http.NewRequest("POST","https://api.twitter.com/oauth2/token",strings.NewReader("grant_type=client_credentials"))
+	req, err := http.NewRequest("POST", "https://api.twitter.com/oauth2/token", strings.NewReader("grant_type=client_credentials"))
 	if err != nil {
 		fmt.Println("error", err)
 		os.Exit(-1)
@@ -44,9 +44,9 @@ func Get_Access(b64Token string){
 }
 
 //function to search for tweets using Twitter Standard APIs. Uses the token obtained from the previous function to obtain access to API
-func Twitter_search(searchword string){
+func Twitter_search(searchword string) {
 
-	url := fmt.Sprintf("https://api.twitter.com/1.1/search/tweets.json?q=%s&lang=en&count=100",searchword)
+	url := fmt.Sprintf("https://api.twitter.com/1.1/search/tweets.json?q=%s&lang=en&count=100", searchword)
 
 	req1, err := http.NewRequest("GET", url, nil)
 	if err != nil {
@@ -69,13 +69,12 @@ func Twitter_search(searchword string){
 		log.Println(err)
 	}
 
-
-	for i :=0 ; i < len(record.Statuses); i++ {
+	for i := 0; i < len(record.Statuses); i++ {
 		//fmt.Println(i)
 		//fmt.Printf("%+v\n" , record.Statuses[i])
 		var this_tweet config.Single_Tweet_result
 		this_tweet = record.Statuses[i]
-		cnckafkaapi.PostMessageToKafka(this_tweet,"twitterfeed")
+		cnckafkaapi.PostMessageToKafka(this_tweet, "twitterfeed")
 
 	}
 	fmt.Println(record.SearchMetadata.Count)
